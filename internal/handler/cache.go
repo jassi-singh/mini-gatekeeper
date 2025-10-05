@@ -60,12 +60,8 @@ func handleCacheMiss(logger *slog.Logger, cacheService services.CacheService, pu
 		return value, nil
 	} else {
 		logger.Info("Waiting for value to be set in cache", "key", key)
-		msgChan, err := pubsubService.Subscribe(key)
-		if err != nil {
-			logger.Error("Failed to subscribe to pubsub", "error", err)
-			return "", err
-		}
-		defer pubsubService.Unsubscribe(key)
+		msgChan, id := pubsubService.Subscribe(key)
+		defer pubsubService.Unsubscribe(key, id)
 		value, exists := cacheService.Get(key)
 		if exists && value != "" {
 			logger.Info("Found value in cache after subscribing", "key", key)
